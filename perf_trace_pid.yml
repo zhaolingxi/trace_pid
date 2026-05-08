@@ -1,0 +1,19 @@
+version: "3.3"
+services:
+  perf-collector:
+    image: ubuntu22-perf-image:latest   # 确保镜像里装了 linux-tools-common
+    network_mode: "host"
+    pid: "host"
+    privileged: true
+    environment:
+      - TARGET_PID=${TARGET_PID}
+      - PROFILE_HZ=${PROFILE_HZ}
+      - PROFILE_DURATION=${PROFILE_DURATION}
+    volumes:
+      - ./results:/data
+    # 直接在 command 里写最简单的命令
+    # 注意：这里我们只管采样，不管解析
+    # sh -c "perf record -e cycles:u -F 99 -p ${TARGET_PID} --call-graph dwarf,16384 -g -o /data/perf.data -- sleep 30"
+    # sh -c "perf record -e cycles:u -F 99 -p ${TARGET_PID} --call-graph fp -g -o /data/perf.data -- sleep 30"
+    command: >
+      sh -c "perf record -e cycles:u -F ${PROFILE_HZ} -p ${TARGET_PID} --call-graph dwarf,16384 -g -o /data/perf.data -- sleep ${PROFILE_DURATION}"

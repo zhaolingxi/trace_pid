@@ -1,0 +1,30 @@
+version: "3.3"
+
+services:
+  bpftrace:
+    image: quay.io/iovisor/bpftrace:latest
+    privileged: true
+    pid: host
+    volumes:
+      - /sys/kernel/debug:/sys/kernel/debug
+      - /sys:/sys:ro
+      - /var/lib/docker:/var/lib/docker:ro
+      - ./results:/data
+    environment:
+      - TARGET_PID=${TARGET_PID}
+      - PROFILE_HZ=${PROFILE_HZ}
+      - PROFILE_DURATION=${PROFILE_DURATION}
+      - BPFTRACE_SYMBOL_SOURCE=dwarf
+    command: >
+      sh -c "
+        echo 'Profiling PID='$$TARGET_PID;
+        bpftrace -e '
+          profile:hz:${PROFILE_HZ} /pid == $$1/ {
+            @[ustack(20)] = count();
+          }
+          interval:s:${PROFILE_DURATION} {
+            print(@);
+            exit();
+          }
+        ' $$TARGET_PID > /data/profile.raw 2>&1
+      "
