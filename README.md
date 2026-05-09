@@ -66,12 +66,12 @@ TARGET_PID=3032514
 🔬 常见问题进阶诊断：为什么你会看到 [unknown]？
 在本框架中，如果你发现火焰图显示不全，通常由于以下原因：
 
-路径映射错误： perf 和 bpftrace 都需要读取宿主机的二进制文件。如果你的代码路径不在 /mnt/poc_mount 下，请修改相应的 .yml 文件中的 volumes 挂载点。
+路径映射错误： perf 和 bpftrace 都需要读取宿主机的二进制文件。如果你的代码路径不在 /mnt/xx_mount 下，请修改相应的 .yml 文件中的 volumes 挂载点。
 没有帧指针（针对 bpftrace）： 如果 bpftrace 抓取的栈非常浅（只有 1-2 层），说明目标应用在编译时省略了帧指针。必须改用 perf 模式或在编译时添加 -fno-omit-frame-pointer。
 符号表被 Strip： 如果两种模式都抓不到函数名，请检查你的二进制文件。在宿主机运行 file <binary>，如果显示 stripped，则需要使用带调试符号的 -g 版本。
 内核权限限制： 如果出现 Permission Denied，请在宿主机运行： sudo sysctl -w kernel.perf_event_paranoid=-1
 📋 配置与调优
-采样频率：在 .bash 或 .yml 中通过 -F 99 或 hz:99 控制。对于路径规划等计算密集型，99Hz 为推荐平衡点。
+采样频率：在 .bash 或 .yml 中通过 -F 99 或 hz:99 控制。对于计算密集型，99Hz 为推荐平衡点。
 采样时长：
 perf 建议控制在 60 秒内。
 bpftrace 可以酌情延长，因为其内置了哈希聚合，不会撑爆磁盘。
